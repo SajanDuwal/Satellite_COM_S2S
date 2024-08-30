@@ -1,0 +1,5 @@
+../Core/Src/error_handler.c:11:10:calculateCRC_CCITT_AX25	32	static
+../Core/Src/error_handler.c:32:10:calc_CRC	64	dynamic
+../Core/Src/error_handler.c:57:5:bit_stuffing	64	static
+../Core/Src/error_handler.c:130:5:bit_destuffing	56	static
+../Core/Src/error_handler.c:183:5:check_packet_type	24	static

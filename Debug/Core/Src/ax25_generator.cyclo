@@ -1,0 +1,3 @@
+../Core/Src/ax25_generator.c:19:6:updatePacket	2
+../Core/Src/ax25_generator.c:37:6:getHDLCPacket	2
+../Core/Src/ax25_generator.c:86:6:getAX25Packet	3
