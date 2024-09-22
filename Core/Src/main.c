@@ -265,7 +265,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 								|| HAL_UART_Transmit(&hlpuart1, OBC_UART_RX,
 										obc_plen, 2000) == HAL_OK) {
 							myDebug(
-									"*** Incorrect Digipeater Data re-transmit to OBC, Length: %d\r\n",
+									"*** Incorrect Digipeater Data re-transmit to OBC, Length: %d bytes\r\n",
 									sizeof(OBC_UART_RX));
 
 							for (int i = 0; i < sizeof(OBC_UART_RX); i++) {
@@ -308,7 +308,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 								|| HAL_UART_Transmit(&hlpuart1, OBC_UART_RX,
 										obc_plen, 2000) == HAL_OK) {
 							myDebug(
-									"*** Incorrect command re-transmit to OBC, Length: %d\r\n",
+									"*** Incorrect command re-transmit to OBC, Length: %d bytes\r\n",
 									sizeof(OBC_UART_RX));
 
 							for (int i = 0; i < sizeof(OBC_UART_RX); i++) {
@@ -528,7 +528,7 @@ int main(void)
 			uint8_t gs_cmd_buff[100];
 			int gs_cmd_len = bit_destuffing(crc_buff, gs_cmd_buff,
 					crc_buff_len);
-			gs_cmd_len--;
+			//gs_cmd_len--;
 
 			uint8_t main_gs_cmd[gs_cmd_len];
 			for (int i = 0; i < gs_cmd_len; i++) {
@@ -574,7 +574,7 @@ int main(void)
 					OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
 					obc_ilen = OBC_UART_RX[2];
 
-					myDebug("\nCommand sent to OBC, Length: %d\r\n",
+					myDebug("\nCommand sent to OBC, Length: %d bytes\r\n",
 							gs_cmd_len);
 
 					if (HAL_UART_Transmit(&huart2, main_gs_cmd,
@@ -597,7 +597,7 @@ int main(void)
 					OBC_SUCCESS_DATA_RX_FLAG = 1;
 
 				} else {
-					myDebug("\nCommand sent to OBC, Length: %d\r\n",
+					myDebug("\nCommand sent to OBC, Length: %d bytes\r\n",
 							gs_cmd_len);
 					if (HAL_UART_Transmit(&huart2, main_gs_cmd,
 							sizeof(main_gs_cmd), 2000) == HAL_OK
@@ -641,7 +641,7 @@ int main(void)
 						OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
 						obc_ilen = OBC_UART_RX[2];
 
-						myDebug("\nCommand sent to OBC, Length: %d\r\n",
+						myDebug("\nCommand sent to OBC, Length: %d bytes\r\n",
 								gs_cmd_len);
 
 						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
@@ -667,7 +667,7 @@ int main(void)
 							&& main_gs_cmd[19] == 0x02
 							&& main_gs_cmd[20] == 0x53) { // if digipeater packet
 						myDebug(
-								"\nDigipeater packet sent to OBC, Length: %d\r\n",
+								"\nDigipeater packet sent to OBC, Length: %d bytes\r\n",
 								gs_cmd_len);
 						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
 								sizeof(main_gs_cmd), 2000) == HAL_OK
@@ -724,7 +724,7 @@ int main(void)
 						OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
 						obc_ilen = OBC_UART_RX[2];
 
-						myDebug("\nCommand sent to OBC, Length: %d\r\n",
+						myDebug("\nCommand sent to OBC, Length: %d bytes\r\n",
 								gs_cmd_len);
 
 						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
@@ -764,7 +764,7 @@ int main(void)
 						OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
 						obc_ilen = OBC_UART_RX[2];
 
-						myDebug("\nCommand sent to OBC, Length: %d\r\n",
+						myDebug("\nCommand sent to OBC, Length: %d bytes\r\n",
 								gs_cmd_len);
 
 						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
@@ -805,7 +805,7 @@ int main(void)
 						memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
 
 					} else {
-						myDebug("\nCommand sent to OBC, Length: %d\r\n",
+						myDebug("\nCommand sent to OBC, Length: %d bytes\r\n",
 								gs_cmd_len);
 
 						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
@@ -892,7 +892,7 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 	if (radioIrq == IRQ_TX_DONE) {
 		OBC_SUCCESS_DATA_RX_FLAG = 0;
 
-		myDebug("\nSatellite Data Transmitted Successful, Length: %d\r\n",
+		myDebug("\nSatellite Data Transmitted Successful, Length: %d bytes\r\n",
 				tx_buffer_len);
 		for (int i = 0; i < tx_buffer_len; i++) {
 			myDebug("%02x ", tx_buffer[i]);

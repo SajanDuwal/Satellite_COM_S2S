@@ -124,6 +124,13 @@ int bit_stuffing(uint8_t *data, uint8_t *output_data, int length) {
 //	}
 //	myDebug("\n");
 
+
+	for(int i = 0; i < length; i++){
+		output_data[i] = data[i];
+	}
+
+	out_index = length;
+
 	return out_index; // Return the size of output data after bit stuffing
 }
 
@@ -176,6 +183,14 @@ int bit_destuffing(uint8_t *data, uint8_t *output_data, int length) {
 //		}
 //	}
 //	myDebug("\n");
+
+
+	for(int i = 0; i < length; i++){
+		output_data[i] = data[i];
+	}
+
+	out_index = length;
+
 
 	return out_index;
 }
