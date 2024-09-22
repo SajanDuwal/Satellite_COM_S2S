@@ -18,7 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dma.h"
+#include "usart.h"
 #include "app_subghz_phy.h"
+#include "tim.h"
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -62,19 +66,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-UART_HandleTypeDef hlpuart1;
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
-DMA_HandleTypeDef hdma_lpuart1_rx;
-DMA_HandleTypeDef hdma_lpuart1_tx;
-DMA_HandleTypeDef hdma_usart1_rx;
-DMA_HandleTypeDef hdma_usart1_tx;
-DMA_HandleTypeDef hdma_usart2_rx;
-DMA_HandleTypeDef hdma_usart2_tx;
-
-SUBGHZ_HandleTypeDef hsubghz;
-
-TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
 PacketParams_t pkt_params;
@@ -108,16 +99,12 @@ int DIGIPEATER_RX_FLAG = 0;
 
 int packet_type_true = 0;
 
+int RX_FLAG = 0;    //  1 when received
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_LPUART1_UART_Init(void);
-static void MX_USART1_UART_Init(void);
-static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 int countsDataBetweenFlags(uint8_t *data, int data_length);
 void setPacketParams(uint8_t buffer_length);
@@ -184,14 +171,6 @@ void radioConfig(uint8_t *buffer, uint8_t buffer_len) {
 	SUBGRF_SetWhiteningSeed(0x01FF);
 	SUBGRF_SetPaConfig(PA_DUTY_CYCLE, HP_MAX, PA_SEL, 0x01);
 	SUBGRF_SetTxParams(RFO_LP, POWER, RAMP_TIME);
-
-	SUBGRF_Init(DioIrqHndlr);
-	SUBGRF_SetDioIrqParams(
-			IRQ_TX_DONE | IRQ_PREAMBLE_DETECTED | IRQ_RX_DONE
-					| IRQ_RX_TX_TIMEOUT | IRQ_SYNCWORD_VALID,
-			IRQ_TX_DONE | IRQ_PREAMBLE_DETECTED | IRQ_RX_DONE
-					| IRQ_RX_TX_TIMEOUT | IRQ_SYNCWORD_VALID, IRQ_RADIO_NONE,
-			IRQ_RADIO_NONE);
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
@@ -377,39 +356,40 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 /* USER CODE END 0 */
 
 /**
- * @brief  The application entry point.
- * @retval int
- */
-int main(void) {
-	/* USER CODE BEGIN 1 */
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(void)
+{
+  /* USER CODE BEGIN 1 */
 
-	/* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-	/* MCU Configuration--------------------------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-	/* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* Configure the system clock */
-	SystemClock_Config();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-	/* USER CODE BEGIN SysInit */
+  /* USER CODE BEGIN SysInit */
 
-	/* USER CODE END SysInit */
+  /* USER CODE END SysInit */
 
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_DMA_Init();
-	MX_USART2_UART_Init();
-	MX_LPUART1_UART_Init();
-	MX_USART1_UART_Init();
-	MX_SubGHz_Phy_Init();
-	MX_TIM2_Init();
-	/* USER CODE BEGIN 2 */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_USART2_UART_Init();
+  MX_LPUART1_UART_Init();
+  MX_USART1_UART_Init();
+  MX_SubGHz_Phy_Init();
+  MX_TIM2_Init();
+  /* USER CODE BEGIN 2 */
 
 	HAL_TIM_Base_Start(&htim2);
 
@@ -429,6 +409,15 @@ int main(void) {
 	while (OBC_HANDSHAKE_FLAG == 0) {
 		WAIT_FOR_HANDSHAKE();
 	}
+
+	SUBGRF_Init(DioIrqHndlr);
+
+	SUBGRF_SetDioIrqParams(
+			IRQ_TX_DONE | IRQ_PREAMBLE_DETECTED | IRQ_RX_DONE
+					| IRQ_RX_TX_TIMEOUT | IRQ_SYNCWORD_VALID,
+			IRQ_TX_DONE | IRQ_PREAMBLE_DETECTED | IRQ_RX_DONE
+					| IRQ_RX_TX_TIMEOUT | IRQ_SYNCWORD_VALID, IRQ_RADIO_NONE,
+			IRQ_RADIO_NONE);
 
 	setPacketParams(rx_buffer_len);
 	setModulationParams(GFSK_BR_1200, GFSK_FDEV_1200);
@@ -461,15 +450,15 @@ int main(void) {
 
 	HAL_UART_Receive_DMA(&hlpuart1, OBC_UART_RX, obc_plen);
 
-	/* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	while (1) {
-		/* USER CODE END WHILE */
-		MX_SubGHz_Phy_Process();
+    /* USER CODE END WHILE */
+    MX_SubGHz_Phy_Process();
 
-		/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 
 		delay_us(500000);
 
@@ -517,340 +506,385 @@ int main(void) {
 			SUBGRF_SetSwitch(RFO_LP, RFSWITCH_TX);
 			SUBGRF_SendPayload(tx_buffer, tx_buffer_len, 0);
 
+		} else if (RX_FLAG == 1) {
+			RX_FLAG = 0;
+
+			uint8_t temp_rx_buffer_len = 0;
+			temp_rx_buffer_len = countsDataBetweenFlags(rx_buffer,
+					rx_buffer_len); // 7e...7e, size
+
+			uint8_t crc_buff_len = temp_rx_buffer_len - 4;
+			uint8_t crc_buff[crc_buff_len];
+
+			int j = 0;
+			for (int i = 1; i <= crc_buff_len; i++) {
+				crc_buff[j] = rx_buffer[i]; // index 1 to previous byte of crc
+				//				myDebug("%02x ", crc_buff[j]);
+				j++;
+			}
+
+			memset(rx_buffer, '\0', sizeof(rx_buffer));
+
+			uint8_t gs_cmd_buff[100];
+			int gs_cmd_len = bit_destuffing(crc_buff, gs_cmd_buff,
+					crc_buff_len);
+			gs_cmd_len--;
+
+			uint8_t main_gs_cmd[gs_cmd_len];
+			for (int i = 0; i < gs_cmd_len; i++) {
+				main_gs_cmd[i] = gs_cmd_buff[i];
+			}
+
+			if (COUNT_BEACON == 1) {
+
+				if ((main_gs_cmd[18] == 0xDF && main_gs_cmd[19] == 0xAB
+						&& main_gs_cmd[20] == 0xD1) // Enable Digipeater Mission
+						|| (main_gs_cmd[18] == 0x53 && main_gs_cmd[19] == 0x02
+								&& main_gs_cmd[20] == 0x53)) { // Digipeater Packet
+
+					myDebug("\n********GS Command failed: 0x%x\r\n");
+
+					OBC_UART_RX[0] = 0x53;	//header
+					OBC_UART_RX[1] = 0xac;	//packet_ type
+					OBC_UART_RX[2] = 0x04;	//length of info
+					OBC_UART_RX[3] = 0x02;	//mcu_no
+					OBC_UART_RX[4] = 0xfc;	//false command
+					OBC_UART_RX[5] = 0xee;	//error prefix
+					obc_ilen = OBC_UART_RX[2];
+
+					OBC_SUCCESS_DATA_RX_FLAG = 1;
+
+					memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+
+				} else if (main_gs_cmd[18] == 0xFD && main_gs_cmd[19] == 0xBA
+						&& main_gs_cmd[20] == 0xD0) {
+
+					BEACON_COUNT = 2;
+					OBC_SUCCESS_DATA_RX_FLAG = 0;
+					DIGIPEATER_STATUS = 0;
+					DIGIPEATER_FLAG = 0;
+
+					myDebug("\n-------> Digipeater MODE OFF\n\n");
+
+					OBC_UART_RX[0] = 0x53;	//header
+					OBC_UART_RX[1] = 0xac;	//packet_ type
+					OBC_UART_RX[2] = 0x04;	//length of info
+					OBC_UART_RX[3] = 0x02;	//mcu_no
+					OBC_UART_RX[4] = 0x00;	//Digipeater OFF
+					OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
+					obc_ilen = OBC_UART_RX[2];
+
+					myDebug("\nCommand sent to OBC, Length: %d\r\n",
+							gs_cmd_len);
+
+					if (HAL_UART_Transmit(&huart2, main_gs_cmd,
+							sizeof(main_gs_cmd), 2000) == HAL_OK
+							|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
+									sizeof(main_gs_cmd), 2000)) {
+
+						for (int i = 0; i < gs_cmd_len; i++) {
+							myDebug("%02x ", main_gs_cmd[i]);
+						}
+
+						myDebug("\r\n");
+
+						memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+						memset(rx_buffer, '\0', sizeof(rx_buffer));
+						memset(crc_buff, '\0', sizeof(crc_buff));
+						memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
+					}
+
+					OBC_SUCCESS_DATA_RX_FLAG = 1;
+
+				} else {
+					myDebug("\nCommand sent to OBC, Length: %d\r\n",
+							gs_cmd_len);
+					if (HAL_UART_Transmit(&huart2, main_gs_cmd,
+							sizeof(main_gs_cmd), 2000) == HAL_OK
+							|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
+									sizeof(main_gs_cmd), 2000)) {
+
+						for (int i = 0; i < gs_cmd_len; i++) {
+							myDebug("%02x ", main_gs_cmd[i]);
+						}
+
+						SUBGRF_SetRfFrequency(FREQ_435_MHZ);
+						SUBGRF_SetSwitch(RFO_LP, RFSWITCH_RX); /*Set RF switch*/
+						SUBGRF_SetRxBoosted(0xFFFFFF);
+
+						memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+						memset(rx_buffer, '\0', sizeof(rx_buffer));
+						memset(crc_buff, '\0', sizeof(crc_buff));
+						memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
+
+						myDebug("\n\n_____OBC__RECEIVER_____\r\n");
+					}
+
+				}
+			} else if (COUNT_BEACON == 0) {
+				if (DIGIPEATER_STATUS == 1) {
+					if (main_gs_cmd[18] == 0xFD && main_gs_cmd[19] == 0xBA
+							&& main_gs_cmd[20] == 0xD0) {
+
+						BEACON_COUNT = 2;
+						OBC_SUCCESS_DATA_RX_FLAG = 0;
+						DIGIPEATER_STATUS = 0;
+						DIGIPEATER_FLAG = 0;
+
+						myDebug("\n-------> Digipeater MODE OFF\n\n");
+
+						OBC_UART_RX[0] = 0x53;	//header
+						OBC_UART_RX[1] = 0xac;	//packet_ type
+						OBC_UART_RX[2] = 0x04;	//length of info
+						OBC_UART_RX[3] = 0x02;	//mcu_no
+						OBC_UART_RX[4] = 0x00;	//Digipeater OFF
+						OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
+						obc_ilen = OBC_UART_RX[2];
+
+						myDebug("\nCommand sent to OBC, Length: %d\r\n",
+								gs_cmd_len);
+
+						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
+								sizeof(main_gs_cmd), 2000) == HAL_OK
+								|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
+										sizeof(main_gs_cmd), 2000)) {
+
+							for (int i = 0; i < gs_cmd_len; i++) {
+								myDebug("%02x ", main_gs_cmd[i]);
+							}
+
+							myDebug("\r\n");
+
+							memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+							memset(rx_buffer, '\0', sizeof(rx_buffer));
+							memset(crc_buff, '\0', sizeof(crc_buff));
+							memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
+						}
+
+						OBC_SUCCESS_DATA_RX_FLAG = 1;
+
+					} else if (main_gs_cmd[18] == 0x53
+							&& main_gs_cmd[19] == 0x02
+							&& main_gs_cmd[20] == 0x53) { // if digipeater packet
+						myDebug(
+								"\nDigipeater packet sent to OBC, Length: %d\r\n",
+								gs_cmd_len);
+						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
+								sizeof(main_gs_cmd), 2000) == HAL_OK
+								|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
+										sizeof(main_gs_cmd), 2000)) {
+
+							for (int i = 0; i < gs_cmd_len; i++) {
+								myDebug("%02x ", main_gs_cmd[i]);
+							}
+
+							myDebug("\r\n");
+
+							memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+							memset(rx_buffer, '\0', sizeof(rx_buffer));
+							memset(crc_buff, '\0', sizeof(crc_buff));
+							memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
+
+							myDebug(
+									"\n\n_____DIGIPEATER_OBC__RECEIVER_____\r\n");
+
+						}
+					} else {
+						myDebug("\n********GS Command failed: 0x%x\r\n");
+
+						OBC_UART_RX[0] = 0x53;	//header
+						OBC_UART_RX[1] = 0xac;	//packet_ type
+						OBC_UART_RX[2] = 0x04;	//length of info
+						OBC_UART_RX[3] = 0x02;	//mcu_no
+						OBC_UART_RX[4] = 0xfc;	//false command
+						OBC_UART_RX[5] = 0xee;	//error prefix
+						obc_ilen = OBC_UART_RX[2];
+
+						OBC_SUCCESS_DATA_RX_FLAG = 1;
+
+						memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+
+					}
+				} else if (DIGIPEATER_STATUS == 0) {
+					if (main_gs_cmd[18] == 0xFD && main_gs_cmd[19] == 0xBA
+							&& main_gs_cmd[20] == 0xD0) {
+
+						BEACON_COUNT = 2;
+						OBC_SUCCESS_DATA_RX_FLAG = 0;
+						DIGIPEATER_STATUS = 0;
+						DIGIPEATER_FLAG = 0;
+
+						myDebug("\n-------> Digipeater MODE OFF\n\n");
+
+						OBC_UART_RX[0] = 0x53;	//header
+						OBC_UART_RX[1] = 0xac;	//packet_ type
+						OBC_UART_RX[2] = 0x04;	//length of info
+						OBC_UART_RX[3] = 0x02;	//mcu_no
+						OBC_UART_RX[4] = 0x00;	//Digipeater OFF
+						OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
+						obc_ilen = OBC_UART_RX[2];
+
+						myDebug("\nCommand sent to OBC, Length: %d\r\n",
+								gs_cmd_len);
+
+						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
+								sizeof(main_gs_cmd), 2000) == HAL_OK
+								|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
+										sizeof(main_gs_cmd), 2000)) {
+
+							for (int i = 0; i < gs_cmd_len; i++) {
+								myDebug("%02x ", main_gs_cmd[i]);
+							}
+							myDebug("\r\n");
+
+							memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+							memset(rx_buffer, '\0', sizeof(rx_buffer));
+							memset(crc_buff, '\0', sizeof(crc_buff));
+							memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
+						}
+
+						OBC_SUCCESS_DATA_RX_FLAG = 1;
+
+					} else if (main_gs_cmd[18] == 0xDF
+							&& main_gs_cmd[19] == 0xAB
+							&& main_gs_cmd[20] == 0xD1) {
+
+						BEACON_COUNT = 0;
+						OBC_SUCCESS_DATA_RX_FLAG = 0;
+						DIGIPEATER_STATUS = 1;
+						DIGIPEATER_RX_FLAG = 1;
+
+						myDebug("\n-------> Digipeater MODE ON\n\n");
+
+						OBC_UART_RX[0] = 0x53;	//header
+						OBC_UART_RX[1] = 0xac;	//packet_ type
+						OBC_UART_RX[2] = 0x04;	//length of info
+						OBC_UART_RX[3] = 0x02;	//mcu_no
+						OBC_UART_RX[4] = 0x01;	//Digipeater ON
+						OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
+						obc_ilen = OBC_UART_RX[2];
+
+						myDebug("\nCommand sent to OBC, Length: %d\r\n",
+								gs_cmd_len);
+
+						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
+								sizeof(main_gs_cmd), 2000) == HAL_OK
+								|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
+										sizeof(main_gs_cmd), 2000)) {
+
+							for (int i = 0; i < gs_cmd_len; i++) {
+								myDebug("%02x ", main_gs_cmd[i]);
+							}
+
+							myDebug("\r\n");
+
+							memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+							memset(rx_buffer, '\0', sizeof(rx_buffer));
+							memset(crc_buff, '\0', sizeof(crc_buff));
+							memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
+						}
+
+						OBC_SUCCESS_DATA_RX_FLAG = 1;
+
+					} else if (main_gs_cmd[18] == 0x53
+							&& main_gs_cmd[19] == 0x02
+							&& main_gs_cmd[20] == 0x53) { // Digipeater Packet
+
+						myDebug("\n********GS Command failed: 0x%x\r\n");
+
+						OBC_UART_RX[0] = 0x53;	//header
+						OBC_UART_RX[1] = 0xac;	//packet_ type
+						OBC_UART_RX[2] = 0x04;	//length of info
+						OBC_UART_RX[3] = 0x02;	//mcu_no
+						OBC_UART_RX[4] = 0xfc;	//false command
+						OBC_UART_RX[5] = 0xee;	//error prefix
+						obc_ilen = OBC_UART_RX[2];
+
+						OBC_SUCCESS_DATA_RX_FLAG = 1;
+
+						memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+
+					} else {
+						myDebug("\nCommand sent to OBC, Length: %d\r\n",
+								gs_cmd_len);
+
+						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
+								sizeof(main_gs_cmd), 2000) == HAL_OK
+								|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
+										sizeof(main_gs_cmd), 2000)) {
+
+							for (int i = 0; i < gs_cmd_len; i++) {
+								myDebug("%02x ", main_gs_cmd[i]);
+							}
+
+							myDebug("\r\n");
+
+							memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+							memset(rx_buffer, '\0', sizeof(rx_buffer));
+							memset(crc_buff, '\0', sizeof(crc_buff));
+							memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
+
+							myDebug("\n\n_____OBC__RECEIVER_____\r\n");
+
+						}
+
+					}
+				}
+			}
 		}
 
 		HAL_UART_Receive_DMA(&huart2, OBC_UART_RX, obc_plen);
 
 		HAL_UART_Receive_DMA(&hlpuart1, OBC_UART_RX, obc_plen);
 	}
-	/* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
-void SystemClock_Config(void) {
-	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-	/** Configure the main internal regulator output voltage
-	 */
-	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  /** Configure the main internal regulator output voltage
+  */
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-	/** Initializes the CPU, AHB and APB buses clocks
-	 */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS_PWR;
-	RCC_OscInitStruct.HSEDiv = RCC_HSE_DIV1;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV2;
-	RCC_OscInitStruct.PLL.PLLN = 6;
-	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-	RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
-	RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-		Error_Handler();
-	}
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS_PWR;
+  RCC_OscInitStruct.HSEDiv = RCC_HSE_DIV1;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV2;
+  RCC_OscInitStruct.PLL.PLLN = 6;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
-	/** Configure the SYSCLKSource, HCLK, PCLK1 and PCLK2 clocks dividers
-	 */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK3 | RCC_CLOCKTYPE_HCLK
-			| RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-	RCC_ClkInitStruct.AHBCLK3Divider = RCC_SYSCLK_DIV1;
+  /** Configure the SYSCLKSource, HCLK, PCLK1 and PCLK2 clocks dividers
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK3|RCC_CLOCKTYPE_HCLK
+                              |RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1
+                              |RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLK3Divider = RCC_SYSCLK_DIV1;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
-		Error_Handler();
-	}
-}
-
-/**
- * @brief LPUART1 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_LPUART1_UART_Init(void) {
-
-	/* USER CODE BEGIN LPUART1_Init 0 */
-
-	/* USER CODE END LPUART1_Init 0 */
-
-	/* USER CODE BEGIN LPUART1_Init 1 */
-
-	/* USER CODE END LPUART1_Init 1 */
-	hlpuart1.Instance = LPUART1;
-	hlpuart1.Init.BaudRate = 115200;
-	hlpuart1.Init.WordLength = UART_WORDLENGTH_8B;
-	hlpuart1.Init.StopBits = UART_STOPBITS_1;
-	hlpuart1.Init.Parity = UART_PARITY_NONE;
-	hlpuart1.Init.Mode = UART_MODE_TX_RX;
-	hlpuart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	hlpuart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-	hlpuart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-	hlpuart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	hlpuart1.FifoMode = UART_FIFOMODE_DISABLE;
-	if (HAL_UART_Init(&hlpuart1) != HAL_OK) {
-		Error_Handler();
-	}
-	if (HAL_UARTEx_SetTxFifoThreshold(&hlpuart1, UART_TXFIFO_THRESHOLD_1_8)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	if (HAL_UARTEx_SetRxFifoThreshold(&hlpuart1, UART_RXFIFO_THRESHOLD_1_8)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	if (HAL_UARTEx_DisableFifoMode(&hlpuart1) != HAL_OK) {
-		Error_Handler();
-	}
-	/* USER CODE BEGIN LPUART1_Init 2 */
-
-	/* USER CODE END LPUART1_Init 2 */
-
-}
-
-/**
- * @brief USART1 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_USART1_UART_Init(void) {
-
-	/* USER CODE BEGIN USART1_Init 0 */
-
-	/* USER CODE END USART1_Init 0 */
-
-	/* USER CODE BEGIN USART1_Init 1 */
-
-	/* USER CODE END USART1_Init 1 */
-	huart1.Instance = USART1;
-	huart1.Init.BaudRate = 115200;
-	huart1.Init.WordLength = UART_WORDLENGTH_8B;
-	huart1.Init.StopBits = UART_STOPBITS_1;
-	huart1.Init.Parity = UART_PARITY_NONE;
-	huart1.Init.Mode = UART_MODE_TX_RX;
-	huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-	huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-	huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-	huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	if (HAL_UART_Init(&huart1) != HAL_OK) {
-		Error_Handler();
-	}
-	if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK) {
-		Error_Handler();
-	}
-	/* USER CODE BEGIN USART1_Init 2 */
-
-	/* USER CODE END USART1_Init 2 */
-
-}
-
-/**
- * @brief USART2 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_USART2_UART_Init(void) {
-
-	/* USER CODE BEGIN USART2_Init 0 */
-
-	/* USER CODE END USART2_Init 0 */
-
-	/* USER CODE BEGIN USART2_Init 1 */
-
-	/* USER CODE END USART2_Init 1 */
-	huart2.Instance = USART2;
-	huart2.Init.BaudRate = 115200;
-	huart2.Init.WordLength = UART_WORDLENGTH_8B;
-	huart2.Init.StopBits = UART_STOPBITS_1;
-	huart2.Init.Parity = UART_PARITY_NONE;
-	huart2.Init.Mode = UART_MODE_TX_RX;
-	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-	huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-	huart2.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-	huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-	if (HAL_UART_Init(&huart2) != HAL_OK) {
-		Error_Handler();
-	}
-	if (HAL_UARTEx_SetTxFifoThreshold(&huart2, UART_TXFIFO_THRESHOLD_1_8)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	if (HAL_UARTEx_SetRxFifoThreshold(&huart2, UART_RXFIFO_THRESHOLD_1_8)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	if (HAL_UARTEx_DisableFifoMode(&huart2) != HAL_OK) {
-		Error_Handler();
-	}
-	/* USER CODE BEGIN USART2_Init 2 */
-
-	/* USER CODE END USART2_Init 2 */
-
-}
-
-/**
- * @brief SUBGHZ Initialization Function
- * @param None
- * @retval None
- */
-void MX_SUBGHZ_Init(void) {
-
-	/* USER CODE BEGIN SUBGHZ_Init 0 */
-
-	/* USER CODE END SUBGHZ_Init 0 */
-
-	/* USER CODE BEGIN SUBGHZ_Init 1 */
-
-	/* USER CODE END SUBGHZ_Init 1 */
-	hsubghz.Init.BaudratePrescaler = SUBGHZSPI_BAUDRATEPRESCALER_4;
-	if (HAL_SUBGHZ_Init(&hsubghz) != HAL_OK) {
-		Error_Handler();
-	}
-	/* USER CODE BEGIN SUBGHZ_Init 2 */
-
-	/* USER CODE END SUBGHZ_Init 2 */
-
-}
-
-/**
- * @brief TIM2 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_TIM2_Init(void) {
-
-	/* USER CODE BEGIN TIM2_Init 0 */
-
-	/* USER CODE END TIM2_Init 0 */
-
-	TIM_ClockConfigTypeDef sClockSourceConfig = { 0 };
-	TIM_MasterConfigTypeDef sMasterConfig = { 0 };
-
-	/* USER CODE BEGIN TIM2_Init 1 */
-
-	/* USER CODE END TIM2_Init 1 */
-	htim2.Instance = TIM2;
-	htim2.Init.Prescaler = 48 - 1;
-	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim2.Init.Period = 1000001 - 1;
-	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-	if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
-		Error_Handler();
-	}
-	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-	if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK) {
-		Error_Handler();
-	}
-	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	/* USER CODE BEGIN TIM2_Init 2 */
-
-	/* USER CODE END TIM2_Init 2 */
-
-}
-
-/**
- * Enable DMA controller clock
- */
-static void MX_DMA_Init(void) {
-
-	/* DMA controller clock enable */
-	__HAL_RCC_DMAMUX1_CLK_ENABLE();
-	__HAL_RCC_DMA1_CLK_ENABLE();
-
-	/* DMA interrupt init */
-	/* DMA1_Channel1_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
-	/* DMA1_Channel2_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-	/* DMA1_Channel3_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
-	/* DMA1_Channel4_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
-	/* DMA1_Channel5_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
-	/* DMA1_Channel6_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
-
-}
-
-/**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
-static void MX_GPIO_Init(void) {
-	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-	/* USER CODE BEGIN MX_GPIO_Init_1 */
-	/* USER CODE END MX_GPIO_Init_1 */
-
-	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOB, LED1_Pin | LED2_Pin | LED3_Pin, GPIO_PIN_RESET);
-
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, FE_CTRL3_Pin | FE_CTRL2_Pin | FE_CTRL1_Pin,
-			GPIO_PIN_RESET);
-
-	/*Configure GPIO pins : LED1_Pin LED2_Pin LED3_Pin */
-	GPIO_InitStruct.Pin = LED1_Pin | LED2_Pin | LED3_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-	/*Configure GPIO pins : FE_CTRL3_Pin FE_CTRL2_Pin FE_CTRL1_Pin */
-	GPIO_InitStruct.Pin = FE_CTRL3_Pin | FE_CTRL2_Pin | FE_CTRL1_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-	/*Configure GPIO pins : B1_Pin B2_Pin */
-	GPIO_InitStruct.Pin = B1_Pin | B2_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	/*Configure GPIO pin : B3_Pin */
-	GPIO_InitStruct.Pin = B3_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	HAL_GPIO_Init(B3_GPIO_Port, &GPIO_InitStruct);
-
-	/* USER CODE BEGIN MX_GPIO_Init_2 */
-	/* USER CODE END MX_GPIO_Init_2 */
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -920,6 +954,8 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 
 		HAL_UART_Receive_DMA(&hlpuart1, OBC_UART_RX, obc_plen);
 
+		return;
+
 	}
 
 	if (radioIrq == IRQ_RX_DONE) {
@@ -928,18 +964,16 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 		myDebug("\nGS Command Received: 0x%x\r\n");
 
 		uint8_t temp_rx_buffer_len = 0;
-		temp_rx_buffer_len = countsDataBetweenFlags(rx_buffer, rx_buffer_len);
+		temp_rx_buffer_len = countsDataBetweenFlags(rx_buffer, rx_buffer_len); // 7e...7e, size
 
 		if (temp_rx_buffer_len != -1) {
 
 			uint8_t temp_check_buff[temp_rx_buffer_len];
 			for (int i = 0; i < temp_rx_buffer_len; i++) {
 				temp_check_buff[i] = rx_buffer[i];
-				myDebug("%02x ", temp_check_buff[i]);
+				myDebug("%02x ", temp_check_buff[i]);		//display 7e to 7e
 			}
 			myDebug("\r\n");
-
-			memset(rx_buffer, '\0', sizeof(rx_buffer));
 
 			uint8_t crc_buff_len = temp_rx_buffer_len - 4;
 			uint8_t crc_buff[crc_buff_len];
@@ -948,7 +982,7 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 
 			int j = 0;
 			for (int i = 1; i <= crc_buff_len; i++) {
-				crc_buff[j] = temp_check_buff[i];
+				crc_buff[j] = temp_check_buff[i];// index 1 to previous byte of crc
 				//				myDebug("%02x ", crc_buff[j]);
 				j++;
 			}
@@ -966,324 +1000,11 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 
 			if (calc_crc[0] == msb_crc && calc_crc[1] == lsb_crc) {
 				//				myDebug("GS Command checksum correct: 0x%x\r\n");
+				memset(temp_check_buff, '\0', sizeof(temp_check_buff));
+				RX_FLAG = 1;
 
-				uint8_t gs_cmd_buff[100];
-				int gs_cmd_len = bit_destuffing(crc_buff, gs_cmd_buff,
-						crc_buff_len);
-				gs_cmd_len--;
-
-				uint8_t main_gs_cmd[gs_cmd_len];
-				for (int i = 0; i < gs_cmd_len; i++) {
-					main_gs_cmd[i] = gs_cmd_buff[i];
-				}
-
-				if (COUNT_BEACON == 1) {
-
-					if ((main_gs_cmd[18] == 0xDF && main_gs_cmd[19] == 0xAB
-							&& main_gs_cmd[20] == 0xD1) // Enable Digipeater Mission
-							|| (main_gs_cmd[18] == 0x53
-									&& main_gs_cmd[19] == 0x02
-									&& main_gs_cmd[20] == 0x53)) { // Digipeater Packet
-
-						myDebug("\n********GS Command failed: 0x%x\r\n");
-
-						OBC_UART_RX[0] = 0x53;	//header
-						OBC_UART_RX[1] = 0xac;	//packet_ type
-						OBC_UART_RX[2] = 0x04;	//length of info
-						OBC_UART_RX[3] = 0x02;	//mcu_no
-						OBC_UART_RX[4] = 0xfc;	//false command
-						OBC_UART_RX[5] = 0xee;	//error prefix
-						obc_ilen = OBC_UART_RX[2];
-
-						OBC_SUCCESS_DATA_RX_FLAG = 1;
-
-						memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
-
-					} else if (main_gs_cmd[18] == 0xFD
-							&& main_gs_cmd[19] == 0xBA
-							&& main_gs_cmd[20] == 0xD0) {
-
-						BEACON_COUNT = 2;
-						OBC_SUCCESS_DATA_RX_FLAG = 0;
-						DIGIPEATER_STATUS = 0;
-						DIGIPEATER_FLAG = 0;
-
-						myDebug("\n-------> Digipeater MODE OFF\n\n");
-
-						OBC_UART_RX[0] = 0x53;	//header
-						OBC_UART_RX[1] = 0xac;	//packet_ type
-						OBC_UART_RX[2] = 0x04;	//length of info
-						OBC_UART_RX[3] = 0x02;	//mcu_no
-						OBC_UART_RX[4] = 0x00;	//Digipeater OFF
-						OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
-						obc_ilen = OBC_UART_RX[2];
-
-						myDebug("\nCommand sent to OBC, Length: %d\r\n",
-								gs_cmd_len);
-
-						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
-								sizeof(main_gs_cmd), 2000) == HAL_OK
-								|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
-										sizeof(main_gs_cmd), 2000)) {
-
-							for (int i = 0; i < gs_cmd_len; i++) {
-								myDebug("%02x ", main_gs_cmd[i]);
-							}
-
-							myDebug("\r\n");
-
-							memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
-							memset(rx_buffer, '\0', sizeof(rx_buffer));
-							memset(temp_check_buff, '\0',
-									sizeof(temp_check_buff));
-							memset(crc_buff, '\0', sizeof(crc_buff));
-							memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
-						}
-
-						OBC_SUCCESS_DATA_RX_FLAG = 1;
-
-					} else {
-						myDebug("\nCommand sent to OBC, Length: %d\r\n",
-								gs_cmd_len);
-						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
-								sizeof(main_gs_cmd), 2000) == HAL_OK
-								|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
-										sizeof(main_gs_cmd), 2000)) {
-
-							for (int i = 0; i < gs_cmd_len; i++) {
-								myDebug("%02x ", main_gs_cmd[i]);
-							}
-
-							memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
-							memset(rx_buffer, '\0', sizeof(rx_buffer));
-							memset(temp_check_buff, '\0',
-									sizeof(temp_check_buff));
-							memset(crc_buff, '\0', sizeof(crc_buff));
-							memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
-
-							myDebug("\n\n_____OBC__RECEIVER_____\r\n");
-						}
-
-					}
-				} else if (COUNT_BEACON == 0) {
-					if (DIGIPEATER_STATUS == 1) {
-						if (main_gs_cmd[18] == 0xFD && main_gs_cmd[19] == 0xBA
-								&& main_gs_cmd[20] == 0xD0) {
-
-							BEACON_COUNT = 2;
-							OBC_SUCCESS_DATA_RX_FLAG = 0;
-							DIGIPEATER_STATUS = 0;
-							DIGIPEATER_FLAG = 0;
-
-							myDebug("\n-------> Digipeater MODE OFF\n\n");
-
-							OBC_UART_RX[0] = 0x53;	//header
-							OBC_UART_RX[1] = 0xac;	//packet_ type
-							OBC_UART_RX[2] = 0x04;	//length of info
-							OBC_UART_RX[3] = 0x02;	//mcu_no
-							OBC_UART_RX[4] = 0x00;	//Digipeater OFF
-							OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
-							obc_ilen = OBC_UART_RX[2];
-
-							myDebug("\nCommand sent to OBC, Length: %d\r\n",
-									gs_cmd_len);
-
-							if (HAL_UART_Transmit(&huart2, main_gs_cmd,
-									sizeof(main_gs_cmd), 2000) == HAL_OK
-									|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
-											sizeof(main_gs_cmd), 2000)) {
-
-								for (int i = 0; i < gs_cmd_len; i++) {
-									myDebug("%02x ", main_gs_cmd[i]);
-								}
-
-								myDebug("\r\n");
-
-								memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
-								memset(rx_buffer, '\0', sizeof(rx_buffer));
-								memset(temp_check_buff, '\0',
-										sizeof(temp_check_buff));
-								memset(crc_buff, '\0', sizeof(crc_buff));
-								memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
-							}
-
-							OBC_SUCCESS_DATA_RX_FLAG = 1;
-
-						} else if (main_gs_cmd[18] == 0x53
-								&& main_gs_cmd[19] == 0x02
-								&& main_gs_cmd[20] == 0x53) { // if digipeater packet
-							myDebug(
-									"\nDigipeater packet sent to OBC, Length: %d\r\n",
-									gs_cmd_len);
-							if (HAL_UART_Transmit(&huart2, main_gs_cmd,
-									sizeof(main_gs_cmd), 2000) == HAL_OK
-									|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
-											sizeof(main_gs_cmd), 2000)) {
-
-								for (int i = 0; i < gs_cmd_len; i++) {
-									myDebug("%02x ", main_gs_cmd[i]);
-								}
-
-								myDebug("\r\n");
-
-								memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
-								memset(rx_buffer, '\0', sizeof(rx_buffer));
-								memset(temp_check_buff, '\0',
-										sizeof(temp_check_buff));
-								memset(crc_buff, '\0', sizeof(crc_buff));
-								memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
-
-								myDebug(
-										"\n\n_____DIGIPEATER_OBC__RECEIVER_____\r\n");
-							}
-						} else {
-							myDebug("\n********GS Command failed: 0x%x\r\n");
-
-							OBC_UART_RX[0] = 0x53;	//header
-							OBC_UART_RX[1] = 0xac;	//packet_ type
-							OBC_UART_RX[2] = 0x04;	//length of info
-							OBC_UART_RX[3] = 0x02;	//mcu_no
-							OBC_UART_RX[4] = 0xfc;	//false command
-							OBC_UART_RX[5] = 0xee;	//error prefix
-							obc_ilen = OBC_UART_RX[2];
-
-							OBC_SUCCESS_DATA_RX_FLAG = 1;
-
-							memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
-
-						}
-					} else if (DIGIPEATER_STATUS == 0) {
-						if (main_gs_cmd[18] == 0xFD && main_gs_cmd[19] == 0xBA
-								&& main_gs_cmd[20] == 0xD0) {
-
-							BEACON_COUNT = 2;
-							OBC_SUCCESS_DATA_RX_FLAG = 0;
-							DIGIPEATER_STATUS = 0;
-							DIGIPEATER_FLAG = 0;
-
-							myDebug("\n-------> Digipeater MODE OFF\n\n");
-
-							OBC_UART_RX[0] = 0x53;	//header
-							OBC_UART_RX[1] = 0xac;	//packet_ type
-							OBC_UART_RX[2] = 0x04;	//length of info
-							OBC_UART_RX[3] = 0x02;	//mcu_no
-							OBC_UART_RX[4] = 0x00;	//Digipeater OFF
-							OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
-							obc_ilen = OBC_UART_RX[2];
-
-							myDebug("\nCommand sent to OBC, Length: %d\r\n",
-									gs_cmd_len);
-
-							if (HAL_UART_Transmit(&huart2, main_gs_cmd,
-									sizeof(main_gs_cmd), 2000) == HAL_OK
-									|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
-											sizeof(main_gs_cmd), 2000)) {
-
-								for (int i = 0; i < gs_cmd_len; i++) {
-									myDebug("%02x ", main_gs_cmd[i]);
-								}
-								myDebug("\r\n");
-
-								memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
-								memset(rx_buffer, '\0', sizeof(rx_buffer));
-								memset(temp_check_buff, '\0',
-										sizeof(temp_check_buff));
-								memset(crc_buff, '\0', sizeof(crc_buff));
-								memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
-							}
-
-							OBC_SUCCESS_DATA_RX_FLAG = 1;
-
-						} else if (main_gs_cmd[18] == 0xDF
-								&& main_gs_cmd[19] == 0xAB
-								&& main_gs_cmd[20] == 0xD1) {
-
-							BEACON_COUNT = 0;
-							OBC_SUCCESS_DATA_RX_FLAG = 0;
-							DIGIPEATER_STATUS = 1;
-							DIGIPEATER_RX_FLAG = 1;
-
-							myDebug("\n-------> Digipeater MODE ON\n\n");
-
-							OBC_UART_RX[0] = 0x53;	//header
-							OBC_UART_RX[1] = 0xac;	//packet_ type
-							OBC_UART_RX[2] = 0x04;	//length of info
-							OBC_UART_RX[3] = 0x02;	//mcu_no
-							OBC_UART_RX[4] = 0x01;	//Digipeater ON
-							OBC_UART_RX[5] = 0xdd;	//Digipeater prefix
-							obc_ilen = OBC_UART_RX[2];
-
-							myDebug("\nCommand sent to OBC, Length: %d\r\n",
-									gs_cmd_len);
-
-							if (HAL_UART_Transmit(&huart2, main_gs_cmd,
-									sizeof(main_gs_cmd), 2000) == HAL_OK
-									|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
-											sizeof(main_gs_cmd), 2000)) {
-
-								for (int i = 0; i < gs_cmd_len; i++) {
-									myDebug("%02x ", main_gs_cmd[i]);
-								}
-
-								myDebug("\r\n");
-
-								memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
-								memset(rx_buffer, '\0', sizeof(rx_buffer));
-								memset(temp_check_buff, '\0',
-										sizeof(temp_check_buff));
-								memset(crc_buff, '\0', sizeof(crc_buff));
-								memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
-							}
-
-							OBC_SUCCESS_DATA_RX_FLAG = 1;
-
-						} else if (main_gs_cmd[18] == 0x53
-								&& main_gs_cmd[19] == 0x02
-								&& main_gs_cmd[20] == 0x53) { // Digipeater Packet
-
-							myDebug("\n********GS Command failed: 0x%x\r\n");
-
-							OBC_UART_RX[0] = 0x53;	//header
-							OBC_UART_RX[1] = 0xac;	//packet_ type
-							OBC_UART_RX[2] = 0x04;	//length of info
-							OBC_UART_RX[3] = 0x02;	//mcu_no
-							OBC_UART_RX[4] = 0xfc;	//false command
-							OBC_UART_RX[5] = 0xee;	//error prefix
-							obc_ilen = OBC_UART_RX[2];
-
-							OBC_SUCCESS_DATA_RX_FLAG = 1;
-
-							memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
-
-						} else {
-							myDebug("\nCommand sent to OBC, Length: %d\r\n",
-									gs_cmd_len);
-
-							if (HAL_UART_Transmit(&huart2, main_gs_cmd,
-									sizeof(main_gs_cmd), 2000) == HAL_OK
-									|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
-											sizeof(main_gs_cmd), 2000)) {
-
-								for (int i = 0; i < gs_cmd_len; i++) {
-									myDebug("%02x ", main_gs_cmd[i]);
-								}
-
-								myDebug("\r\n");
-
-								memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
-								memset(rx_buffer, '\0', sizeof(rx_buffer));
-								memset(temp_check_buff, '\0',
-										sizeof(temp_check_buff));
-								memset(crc_buff, '\0', sizeof(crc_buff));
-								memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
-
-								myDebug("\n\n_____OBC__RECEIVER_____\r\n");
-							}
-
-						}
-					}
-				}
 			} else {
+
 				myDebug("\n********GS Command checksum incorrect: 0x%x\r\n");
 
 				OBC_UART_RX[0] = 0x53;	//header
@@ -1295,7 +1016,11 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 				obc_ilen = OBC_UART_RX[2];
 
 				OBC_SUCCESS_DATA_RX_FLAG = 1;
+
+				RX_FLAG = 0;
+
 			}
+
 		} else {
 			myDebug(
 					"\n********GS Command Not Complete 7e.....7e not received: 0x%x\r\n");
@@ -1309,7 +1034,24 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 			obc_ilen = OBC_UART_RX[2];
 
 			OBC_SUCCESS_DATA_RX_FLAG = 1;
+
+			RX_FLAG = 0;
+
 		}
+
+		HAL_UART_Receive_DMA(&huart2, OBC_UART_RX, obc_plen);
+
+		HAL_UART_Receive_DMA(&hlpuart1, OBC_UART_RX, obc_plen);
+
+	}
+
+	if (radioIrq == IRQ_RX_TX_TIMEOUT) {
+
+		setPacketParams(rx_buffer_len);
+		setModulationParams(GFSK_BR_1200, GFSK_FDEV_1200);
+		radioConfig(rx_buffer, rx_buffer_len);
+
+		myDebug("\n########## RX TX TIMEOUT ##########\n");
 
 		SUBGRF_SetRfFrequency(FREQ_435_MHZ);
 		SUBGRF_SetSwitch(RFO_LP, RFSWITCH_RX); /*Set RF switch*/
@@ -1318,23 +1060,23 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 		HAL_UART_Receive_DMA(&huart2, OBC_UART_RX, obc_plen);
 
 		HAL_UART_Receive_DMA(&hlpuart1, OBC_UART_RX, obc_plen);
-
 	}
 
 }
 /* USER CODE END 4 */
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
-void Error_Handler(void) {
-	/* USER CODE BEGIN Error_Handler_Debug */
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();
 	while (1) {
 	}
-	/* USER CODE END Error_Handler_Debug */
+  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT

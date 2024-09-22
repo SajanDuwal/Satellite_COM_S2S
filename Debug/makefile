@@ -61,6 +61,12 @@ default.size.stdout \
 OBJDUMP_LIST += \
 Satellite_COM.list \
 
+OBJCOPY_HEX += \
+Satellite_COM.hex \
+
+OBJCOPY_BIN += \
+Satellite_COM.bin \
+
 
 # All Target
 all: main-build
@@ -84,12 +90,22 @@ Satellite_COM.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
+Satellite_COM.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O ihex $(EXECUTABLES) "Satellite_COM.hex"
+	@echo 'Finished building: $@'
+	@echo ' '
+
+Satellite_COM.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "Satellite_COM.bin"
+	@echo 'Finished building: $@'
+	@echo ' '
+
 # Other Targets
 clean:
-	-$(RM) Satellite_COM.elf Satellite_COM.list Satellite_COM.map default.size.stdout
+	-$(RM) Satellite_COM.bin Satellite_COM.elf Satellite_COM.hex Satellite_COM.list Satellite_COM.map default.size.stdout
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX) $(OBJCOPY_BIN)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'

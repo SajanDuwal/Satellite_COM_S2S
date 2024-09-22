@@ -161,47 +161,46 @@ int32_t RBI_ConfigRFSwitch(RBI_Switch_TypeDef Config)
   int32_t retcode = 0;
   /* USER CODE BEGIN RBI_ConfigRFSwitch_2 */
 
+	switch (Config) {
+	case RADIO_SWITCH_OFF: {
+		/* Turn off switch */
+		//		HAL_GPIO_WritePin(RF_SW_CTRL3_GPIO_PORT, RF_SW_CTRL3_PIN,
+		//				GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(RF_SW_CTRL1_GPIO_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(RF_SW_CTRL2_GPIO_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
+		break;
+	}
+	case RADIO_SWITCH_RX: {
+		/*Turns On in Rx Mode the RF Switch */
+		//		HAL_GPIO_WritePin(RF_SW_CTRL3_GPIO_PORT, RF_SW_CTRL3_PIN, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(RF_SW_CTRL1_GPIO_PORT, RF_SW_CTRL1_PIN,
+				GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(RF_SW_CTRL2_GPIO_PORT, RF_SW_CTRL2_PIN,
+				GPIO_PIN_RESET);
+		break;
+	}
+	case RADIO_SWITCH_RFO_LP: {
+		/*Turns On in Tx Low Power the RF Switch */
+		//		HAL_GPIO_WritePin(RF_SW_CTRL3_GPIO_PORT, RF_SW_CTRL3_PIN, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(RF_SW_CTRL1_GPIO_PORT, RF_SW_CTRL1_PIN,
+				GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(RF_SW_CTRL2_GPIO_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
+		break;
+	}
+	case RADIO_SWITCH_RFO_HP: {
+		/*Turns On in Tx High Power the RF Switch */
+		//		HAL_GPIO_WritePin(RF_SW_CTRL3_GPIO_PORT, RF_SW_CTRL3_PIN, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(RF_SW_CTRL1_GPIO_PORT, RF_SW_CTRL1_PIN,
+				GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(RF_SW_CTRL2_GPIO_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
+		break;
+	}
+	default:
+		break;
+	}
 
-  switch (Config) {
-  	case RADIO_SWITCH_OFF: {
-  		/* Turn off switch */
-  		//		HAL_GPIO_WritePin(RF_SW_CTRL3_GPIO_PORT, RF_SW_CTRL3_PIN,
-  		//				GPIO_PIN_RESET);
-  		HAL_GPIO_WritePin(RF_SW_CTRL1_GPIO_PORT, RF_SW_CTRL1_PIN, GPIO_PIN_SET);
-  		HAL_GPIO_WritePin(RF_SW_CTRL2_GPIO_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
-  		break;
-  	}
-  	case RADIO_SWITCH_RX: {
-  		/*Turns On in Rx Mode the RF Switch */
-  		//		HAL_GPIO_WritePin(RF_SW_CTRL3_GPIO_PORT, RF_SW_CTRL3_PIN, GPIO_PIN_SET);
-  		HAL_GPIO_WritePin(RF_SW_CTRL1_GPIO_PORT, RF_SW_CTRL1_PIN,
-  				GPIO_PIN_RESET);
-  		HAL_GPIO_WritePin(RF_SW_CTRL2_GPIO_PORT, RF_SW_CTRL2_PIN,
-  				GPIO_PIN_RESET);
-  		break;
-  	}
-  	case RADIO_SWITCH_RFO_LP: {
-  		/*Turns On in Tx Low Power the RF Switch */
-  		//		HAL_GPIO_WritePin(RF_SW_CTRL3_GPIO_PORT, RF_SW_CTRL3_PIN, GPIO_PIN_SET);
-  		HAL_GPIO_WritePin(RF_SW_CTRL1_GPIO_PORT, RF_SW_CTRL1_PIN,
-  				GPIO_PIN_RESET);
-  		HAL_GPIO_WritePin(RF_SW_CTRL2_GPIO_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
-  		break;
-  	}
-  	case RADIO_SWITCH_RFO_HP: {
-  		/*Turns On in Tx High Power the RF Switch */
-  		//		HAL_GPIO_WritePin(RF_SW_CTRL3_GPIO_PORT, RF_SW_CTRL3_PIN, GPIO_PIN_SET);
-  		HAL_GPIO_WritePin(RF_SW_CTRL1_GPIO_PORT, RF_SW_CTRL1_PIN,
-  				GPIO_PIN_RESET);
-  		HAL_GPIO_WritePin(RF_SW_CTRL2_GPIO_PORT, RF_SW_CTRL2_PIN, GPIO_PIN_SET);
-  		break;
-  	}
-  	default:
-  		break;
-  	}
-
-  /*   NUCLEO CONFIG	*/
-
+	/*   NUCLEO CONFIG	*/
+//
 //	switch (Config) {
 //	case RADIO_SWITCH_OFF: {
 //		/* Turn off switch */
@@ -239,6 +238,7 @@ int32_t RBI_ConfigRFSwitch(RBI_Switch_TypeDef Config)
 //	default:
 //		break;
 //	}
+
   /* USER CODE END RBI_ConfigRFSwitch_2 */
   return retcode;
 #endif  /* USE_BSP_DRIVER */

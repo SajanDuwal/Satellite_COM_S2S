@@ -41,7 +41,7 @@ Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver/radio_driver.o: \
  ../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_ll_system.h \
  ../Core/Inc/main.h \
  ../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_ll_gpio.h \
- ../Core/Inc/main.h ../Utilities/misc/stm32_mem.h \
+ ../Core/Inc/subghz.h ../Utilities/misc/stm32_mem.h \
  ../Core/Inc/utilities_conf.h ../Drivers/CMSIS/Include/cmsis_compiler.h \
  ../Utilities/misc/stm32_tiny_vsnprintf.h ../Core/Inc/utilities_def.h \
  ../SubGHz_Phy/Target/mw_log_conf.h ../SubGHz_Phy/Target/radio_board_if.h \
@@ -88,7 +88,7 @@ Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver/radio_driver.o: \
 ../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_ll_system.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_ll_gpio.h:
-../Core/Inc/main.h:
+../Core/Inc/subghz.h:
 ../Utilities/misc/stm32_mem.h:
 ../Core/Inc/utilities_conf.h:
 ../Drivers/CMSIS/Include/cmsis_compiler.h:

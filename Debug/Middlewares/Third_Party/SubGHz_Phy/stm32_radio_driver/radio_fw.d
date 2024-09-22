@@ -47,7 +47,7 @@ Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver/radio_fw.o: \
  ../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_ll_system.h \
  ../Core/Inc/main.h \
  ../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_ll_gpio.h \
- ../Core/Inc/main.h ../SubGHz_Phy/Target/mw_log_conf.h \
+ ../Core/Inc/subghz.h ../SubGHz_Phy/Target/mw_log_conf.h \
  ../SubGHz_Phy/Target/radio_board_if.h ../Core/Inc/utilities_def.h \
  ../Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver/radio_driver.h \
  ../SubGHz_Phy/Target/mw_log_conf.h
@@ -102,7 +102,7 @@ Middlewares/Third_Party/SubGHz_Phy/stm32_radio_driver/radio_fw.o: \
 ../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_ll_system.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32WLxx_HAL_Driver/Inc/stm32wlxx_ll_gpio.h:
-../Core/Inc/main.h:
+../Core/Inc/subghz.h:
 ../SubGHz_Phy/Target/mw_log_conf.h:
 ../SubGHz_Phy/Target/radio_board_if.h:
 ../Core/Inc/utilities_def.h:
