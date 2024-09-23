@@ -3,7 +3,7 @@
 ../Core/Src/main.c:156:6:setModulationParams	1
 ../Core/Src/main.c:166:6:radioConfig	1
 ../Core/Src/main.c:176:6:HAL_UART_RxCpltCallback	27
-../Core/Src/main.c:362:5:main	56
-../Core/Src/main.c:847:6:SystemClock_Config	3
-../Core/Src/main.c:891:6:DioIrqHndlr	13
-../Core/Src/main.c:1072:6:Error_Handler	1
+../Core/Src/main.c:362:5:main	62
+../Core/Src/main.c:885:6:SystemClock_Config	3
+../Core/Src/main.c:925:6:DioIrqHndlr	13
+../Core/Src/main.c:1106:6:Error_Handler	1
