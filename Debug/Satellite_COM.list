@@ -4742,180 +4742,180 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
  80021cc:	487e      	ldr	r0, [pc, #504]	; (80023c8 <DioIrqHndlr+0x248>)
  80021ce:	f7fe fabd 	bl	800074c <myDebug>
 
-		memset(tx_buffer, '\0', sizeof(tx_buffer));
- 80021d2:	2296      	movs	r2, #150	; 0x96
- 80021d4:	2100      	movs	r1, #0
- 80021d6:	487a      	ldr	r0, [pc, #488]	; (80023c0 <DioIrqHndlr+0x240>)
- 80021d8:	f009 fd0c 	bl	800bbf4 <memset>
-
-		if (PACKET_TYPE == 0xB1 || PACKET_TYPE == 0xB2) {
- 80021dc:	4b7b      	ldr	r3, [pc, #492]	; (80023cc <DioIrqHndlr+0x24c>)
- 80021de:	781b      	ldrb	r3, [r3, #0]
- 80021e0:	2bb1      	cmp	r3, #177	; 0xb1
- 80021e2:	d003      	beq.n	80021ec <DioIrqHndlr+0x6c>
- 80021e4:	4b79      	ldr	r3, [pc, #484]	; (80023cc <DioIrqHndlr+0x24c>)
- 80021e6:	781b      	ldrb	r3, [r3, #0]
- 80021e8:	2bb2      	cmp	r3, #178	; 0xb2
- 80021ea:	d10c      	bne.n	8002206 <DioIrqHndlr+0x86>
-			BEACON_COUNT--;
- 80021ec:	4b78      	ldr	r3, [pc, #480]	; (80023d0 <DioIrqHndlr+0x250>)
- 80021ee:	681b      	ldr	r3, [r3, #0]
- 80021f0:	3b01      	subs	r3, #1
- 80021f2:	4a77      	ldr	r2, [pc, #476]	; (80023d0 <DioIrqHndlr+0x250>)
- 80021f4:	6013      	str	r3, [r2, #0]
-			COUNT_BEACON--;
- 80021f6:	4b77      	ldr	r3, [pc, #476]	; (80023d4 <DioIrqHndlr+0x254>)
- 80021f8:	681b      	ldr	r3, [r3, #0]
- 80021fa:	3b01      	subs	r3, #1
- 80021fc:	4a75      	ldr	r2, [pc, #468]	; (80023d4 <DioIrqHndlr+0x254>)
- 80021fe:	6013      	str	r3, [r2, #0]
-			PACKET_TYPE = 0;
- 8002200:	4b72      	ldr	r3, [pc, #456]	; (80023cc <DioIrqHndlr+0x24c>)
- 8002202:	2200      	movs	r2, #0
- 8002204:	701a      	strb	r2, [r3, #0]
-		}
-
-		if (DIGIPEATER_FLAG) {
- 8002206:	4b74      	ldr	r3, [pc, #464]	; (80023d8 <DioIrqHndlr+0x258>)
- 8002208:	681b      	ldr	r3, [r3, #0]
- 800220a:	2b00      	cmp	r3, #0
- 800220c:	d00e      	beq.n	800222c <DioIrqHndlr+0xac>
-			BEACON_COUNT = 2;
- 800220e:	4b70      	ldr	r3, [pc, #448]	; (80023d0 <DioIrqHndlr+0x250>)
- 8002210:	2202      	movs	r2, #2
- 8002212:	601a      	str	r2, [r3, #0]
-			OBC_SUCCESS_DATA_RX_FLAG = 0;
- 8002214:	4b67      	ldr	r3, [pc, #412]	; (80023b4 <DioIrqHndlr+0x234>)
- 8002216:	2200      	movs	r2, #0
- 8002218:	601a      	str	r2, [r3, #0]
-			DIGIPEATER_STATUS = 0;
- 800221a:	4b70      	ldr	r3, [pc, #448]	; (80023dc <DioIrqHndlr+0x25c>)
- 800221c:	2200      	movs	r2, #0
- 800221e:	601a      	str	r2, [r3, #0]
-			DIGIPEATER_FLAG = 0;
- 8002220:	4b6d      	ldr	r3, [pc, #436]	; (80023d8 <DioIrqHndlr+0x258>)
- 8002222:	2200      	movs	r2, #0
- 8002224:	601a      	str	r2, [r3, #0]
-			DIGIPEATER_RX_FLAG = 0;
- 8002226:	4b6e      	ldr	r3, [pc, #440]	; (80023e0 <DioIrqHndlr+0x260>)
- 8002228:	2200      	movs	r2, #0
- 800222a:	601a      	str	r2, [r3, #0]
-		}
-
-		if (BEACON_COUNT == 0) {
- 800222c:	4b68      	ldr	r3, [pc, #416]	; (80023d0 <DioIrqHndlr+0x250>)
- 800222e:	681b      	ldr	r3, [r3, #0]
- 8002230:	2b00      	cmp	r3, #0
- 8002232:	d109      	bne.n	8002248 <DioIrqHndlr+0xc8>
-			OBC_SUCCESS_DATA_RX_FLAG = 0;
- 8002234:	4b5f      	ldr	r3, [pc, #380]	; (80023b4 <DioIrqHndlr+0x234>)
- 8002236:	2200      	movs	r2, #0
- 8002238:	601a      	str	r2, [r3, #0]
-			DIGIPEATER_STATUS = 1;
- 800223a:	4b68      	ldr	r3, [pc, #416]	; (80023dc <DioIrqHndlr+0x25c>)
- 800223c:	2201      	movs	r2, #1
- 800223e:	601a      	str	r2, [r3, #0]
-			myDebug("\n########## Digipeater Mode Configuration: ##########\n");
- 8002240:	4868      	ldr	r0, [pc, #416]	; (80023e4 <DioIrqHndlr+0x264>)
- 8002242:	f7fe fa83 	bl	800074c <myDebug>
- 8002246:	e002      	b.n	800224e <DioIrqHndlr+0xce>
-		} else {
-			DIGIPEATER_STATUS = 0;
- 8002248:	4b64      	ldr	r3, [pc, #400]	; (80023dc <DioIrqHndlr+0x25c>)
- 800224a:	2200      	movs	r2, #0
- 800224c:	601a      	str	r2, [r3, #0]
-		}
-
 		myDebug("\n########## Sending TX done response to OBC ##########\n");
- 800224e:	4866      	ldr	r0, [pc, #408]	; (80023e8 <DioIrqHndlr+0x268>)
- 8002250:	f7fe fa7c 	bl	800074c <myDebug>
+ 80021d2:	487e      	ldr	r0, [pc, #504]	; (80023cc <DioIrqHndlr+0x24c>)
+ 80021d4:	f7fe faba 	bl	800074c <myDebug>
 
 		uint8_t tx_done_response[43];
 
 		tx_done_response[0] = 0x42;	//header
- 8002254:	2342      	movs	r3, #66	; 0x42
- 8002256:	743b      	strb	r3, [r7, #16]
+ 80021d8:	2342      	movs	r3, #66	; 0x42
+ 80021da:	743b      	strb	r3, [r7, #16]
 		tx_done_response[1] = 0xac;	//packet_ type
- 8002258:	23ac      	movs	r3, #172	; 0xac
- 800225a:	747b      	strb	r3, [r7, #17]
+ 80021dc:	23ac      	movs	r3, #172	; 0xac
+ 80021de:	747b      	strb	r3, [r7, #17]
 		tx_done_response[2] = 0x04;	//length of info
- 800225c:	2304      	movs	r3, #4
- 800225e:	74bb      	strb	r3, [r7, #18]
+ 80021e0:	2304      	movs	r3, #4
+ 80021e2:	74bb      	strb	r3, [r7, #18]
 		tx_done_response[3] = 0x02;	//mcu_no
- 8002260:	2302      	movs	r3, #2
- 8002262:	74fb      	strb	r3, [r7, #19]
+ 80021e4:	2302      	movs	r3, #2
+ 80021e6:	74fb      	strb	r3, [r7, #19]
 		tx_done_response[4] = 0x4d;	//tx_done prefix
- 8002264:	234d      	movs	r3, #77	; 0x4d
- 8002266:	753b      	strb	r3, [r7, #20]
+ 80021e8:	234d      	movs	r3, #77	; 0x4d
+ 80021ea:	753b      	strb	r3, [r7, #20]
 		tx_done_response[5] = 0x4d;	//tx_done prefix
- 8002268:	234d      	movs	r3, #77	; 0x4d
- 800226a:	757b      	strb	r3, [r7, #21]
+ 80021ec:	234d      	movs	r3, #77	; 0x4d
+ 80021ee:	757b      	strb	r3, [r7, #21]
 
 		for (int i = 6; i < 43; i++) {
- 800226c:	2306      	movs	r3, #6
- 800226e:	673b      	str	r3, [r7, #112]	; 0x70
- 8002270:	e008      	b.n	8002284 <DioIrqHndlr+0x104>
+ 80021f0:	2306      	movs	r3, #6
+ 80021f2:	673b      	str	r3, [r7, #112]	; 0x70
+ 80021f4:	e008      	b.n	8002208 <DioIrqHndlr+0x88>
 			tx_done_response[i] = 0x4d;
- 8002272:	f107 0210 	add.w	r2, r7, #16
- 8002276:	6f3b      	ldr	r3, [r7, #112]	; 0x70
- 8002278:	4413      	add	r3, r2
- 800227a:	224d      	movs	r2, #77	; 0x4d
- 800227c:	701a      	strb	r2, [r3, #0]
+ 80021f6:	f107 0210 	add.w	r2, r7, #16
+ 80021fa:	6f3b      	ldr	r3, [r7, #112]	; 0x70
+ 80021fc:	4413      	add	r3, r2
+ 80021fe:	224d      	movs	r2, #77	; 0x4d
+ 8002200:	701a      	strb	r2, [r3, #0]
 		for (int i = 6; i < 43; i++) {
- 800227e:	6f3b      	ldr	r3, [r7, #112]	; 0x70
- 8002280:	3301      	adds	r3, #1
- 8002282:	673b      	str	r3, [r7, #112]	; 0x70
- 8002284:	6f3b      	ldr	r3, [r7, #112]	; 0x70
- 8002286:	2b2a      	cmp	r3, #42	; 0x2a
- 8002288:	ddf3      	ble.n	8002272 <DioIrqHndlr+0xf2>
+ 8002202:	6f3b      	ldr	r3, [r7, #112]	; 0x70
+ 8002204:	3301      	adds	r3, #1
+ 8002206:	673b      	str	r3, [r7, #112]	; 0x70
+ 8002208:	6f3b      	ldr	r3, [r7, #112]	; 0x70
+ 800220a:	2b2a      	cmp	r3, #42	; 0x2a
+ 800220c:	ddf3      	ble.n	80021f6 <DioIrqHndlr+0x76>
 		}
 
 		if (HAL_UART_Transmit(&huart2, tx_done_response,
- 800228a:	f107 0110 	add.w	r1, r7, #16
- 800228e:	f44f 63fa 	mov.w	r3, #2000	; 0x7d0
- 8002292:	222b      	movs	r2, #43	; 0x2b
- 8002294:	4855      	ldr	r0, [pc, #340]	; (80023ec <DioIrqHndlr+0x26c>)
- 8002296:	f004 fa72 	bl	800677e <HAL_UART_Transmit>
- 800229a:	4603      	mov	r3, r0
- 800229c:	2b00      	cmp	r3, #0
- 800229e:	d00a      	beq.n	80022b6 <DioIrqHndlr+0x136>
+ 800220e:	f107 0110 	add.w	r1, r7, #16
+ 8002212:	f44f 63fa 	mov.w	r3, #2000	; 0x7d0
+ 8002216:	222b      	movs	r2, #43	; 0x2b
+ 8002218:	486d      	ldr	r0, [pc, #436]	; (80023d0 <DioIrqHndlr+0x250>)
+ 800221a:	f004 fab0 	bl	800677e <HAL_UART_Transmit>
+ 800221e:	4603      	mov	r3, r0
+ 8002220:	2b00      	cmp	r3, #0
+ 8002222:	d00a      	beq.n	800223a <DioIrqHndlr+0xba>
 				sizeof(tx_done_response), 2000) == HAL_OK
 				|| HAL_UART_Transmit(&hlpuart1, tx_done_response,
- 80022a0:	f107 0110 	add.w	r1, r7, #16
- 80022a4:	f44f 63fa 	mov.w	r3, #2000	; 0x7d0
- 80022a8:	222b      	movs	r2, #43	; 0x2b
- 80022aa:	4851      	ldr	r0, [pc, #324]	; (80023f0 <DioIrqHndlr+0x270>)
- 80022ac:	f004 fa67 	bl	800677e <HAL_UART_Transmit>
- 80022b0:	4603      	mov	r3, r0
- 80022b2:	2b00      	cmp	r3, #0
- 80022b4:	d114      	bne.n	80022e0 <DioIrqHndlr+0x160>
+ 8002224:	f107 0110 	add.w	r1, r7, #16
+ 8002228:	f44f 63fa 	mov.w	r3, #2000	; 0x7d0
+ 800222c:	222b      	movs	r2, #43	; 0x2b
+ 800222e:	4869      	ldr	r0, [pc, #420]	; (80023d4 <DioIrqHndlr+0x254>)
+ 8002230:	f004 faa5 	bl	800677e <HAL_UART_Transmit>
+ 8002234:	4603      	mov	r3, r0
+ 8002236:	2b00      	cmp	r3, #0
+ 8002238:	d114      	bne.n	8002264 <DioIrqHndlr+0xe4>
 						sizeof(tx_done_response), 2000) == HAL_OK) {
 
 			for (int i = 0; i < sizeof(tx_done_response); i++) {
- 80022b6:	2300      	movs	r3, #0
- 80022b8:	66fb      	str	r3, [r7, #108]	; 0x6c
- 80022ba:	e00b      	b.n	80022d4 <DioIrqHndlr+0x154>
+ 800223a:	2300      	movs	r3, #0
+ 800223c:	66fb      	str	r3, [r7, #108]	; 0x6c
+ 800223e:	e00b      	b.n	8002258 <DioIrqHndlr+0xd8>
 				myDebug("%02x ", tx_done_response[i]);
- 80022bc:	f107 0210 	add.w	r2, r7, #16
- 80022c0:	6efb      	ldr	r3, [r7, #108]	; 0x6c
- 80022c2:	4413      	add	r3, r2
- 80022c4:	781b      	ldrb	r3, [r3, #0]
- 80022c6:	4619      	mov	r1, r3
- 80022c8:	483e      	ldr	r0, [pc, #248]	; (80023c4 <DioIrqHndlr+0x244>)
- 80022ca:	f7fe fa3f 	bl	800074c <myDebug>
+ 8002240:	f107 0210 	add.w	r2, r7, #16
+ 8002244:	6efb      	ldr	r3, [r7, #108]	; 0x6c
+ 8002246:	4413      	add	r3, r2
+ 8002248:	781b      	ldrb	r3, [r3, #0]
+ 800224a:	4619      	mov	r1, r3
+ 800224c:	485d      	ldr	r0, [pc, #372]	; (80023c4 <DioIrqHndlr+0x244>)
+ 800224e:	f7fe fa7d 	bl	800074c <myDebug>
 			for (int i = 0; i < sizeof(tx_done_response); i++) {
- 80022ce:	6efb      	ldr	r3, [r7, #108]	; 0x6c
- 80022d0:	3301      	adds	r3, #1
- 80022d2:	66fb      	str	r3, [r7, #108]	; 0x6c
- 80022d4:	6efb      	ldr	r3, [r7, #108]	; 0x6c
- 80022d6:	2b2a      	cmp	r3, #42	; 0x2a
- 80022d8:	d9f0      	bls.n	80022bc <DioIrqHndlr+0x13c>
+ 8002252:	6efb      	ldr	r3, [r7, #108]	; 0x6c
+ 8002254:	3301      	adds	r3, #1
+ 8002256:	66fb      	str	r3, [r7, #108]	; 0x6c
+ 8002258:	6efb      	ldr	r3, [r7, #108]	; 0x6c
+ 800225a:	2b2a      	cmp	r3, #42	; 0x2a
+ 800225c:	d9f0      	bls.n	8002240 <DioIrqHndlr+0xc0>
 			}
 
 			myDebug("\r\n");
- 80022da:	483b      	ldr	r0, [pc, #236]	; (80023c8 <DioIrqHndlr+0x248>)
- 80022dc:	f7fe fa36 	bl	800074c <myDebug>
+ 800225e:	485a      	ldr	r0, [pc, #360]	; (80023c8 <DioIrqHndlr+0x248>)
+ 8002260:	f7fe fa74 	bl	800074c <myDebug>
 
+		}
+
+		memset(tx_buffer, '\0', sizeof(tx_buffer));
+ 8002264:	2296      	movs	r2, #150	; 0x96
+ 8002266:	2100      	movs	r1, #0
+ 8002268:	4855      	ldr	r0, [pc, #340]	; (80023c0 <DioIrqHndlr+0x240>)
+ 800226a:	f009 fcc3 	bl	800bbf4 <memset>
+
+		if (PACKET_TYPE == 0xB1 || PACKET_TYPE == 0xB2) {
+ 800226e:	4b5a      	ldr	r3, [pc, #360]	; (80023d8 <DioIrqHndlr+0x258>)
+ 8002270:	781b      	ldrb	r3, [r3, #0]
+ 8002272:	2bb1      	cmp	r3, #177	; 0xb1
+ 8002274:	d003      	beq.n	800227e <DioIrqHndlr+0xfe>
+ 8002276:	4b58      	ldr	r3, [pc, #352]	; (80023d8 <DioIrqHndlr+0x258>)
+ 8002278:	781b      	ldrb	r3, [r3, #0]
+ 800227a:	2bb2      	cmp	r3, #178	; 0xb2
+ 800227c:	d10c      	bne.n	8002298 <DioIrqHndlr+0x118>
+			BEACON_COUNT--;
+ 800227e:	4b57      	ldr	r3, [pc, #348]	; (80023dc <DioIrqHndlr+0x25c>)
+ 8002280:	681b      	ldr	r3, [r3, #0]
+ 8002282:	3b01      	subs	r3, #1
+ 8002284:	4a55      	ldr	r2, [pc, #340]	; (80023dc <DioIrqHndlr+0x25c>)
+ 8002286:	6013      	str	r3, [r2, #0]
+			COUNT_BEACON--;
+ 8002288:	4b55      	ldr	r3, [pc, #340]	; (80023e0 <DioIrqHndlr+0x260>)
+ 800228a:	681b      	ldr	r3, [r3, #0]
+ 800228c:	3b01      	subs	r3, #1
+ 800228e:	4a54      	ldr	r2, [pc, #336]	; (80023e0 <DioIrqHndlr+0x260>)
+ 8002290:	6013      	str	r3, [r2, #0]
+			PACKET_TYPE = 0;
+ 8002292:	4b51      	ldr	r3, [pc, #324]	; (80023d8 <DioIrqHndlr+0x258>)
+ 8002294:	2200      	movs	r2, #0
+ 8002296:	701a      	strb	r2, [r3, #0]
+		}
+
+		if (DIGIPEATER_FLAG) {
+ 8002298:	4b52      	ldr	r3, [pc, #328]	; (80023e4 <DioIrqHndlr+0x264>)
+ 800229a:	681b      	ldr	r3, [r3, #0]
+ 800229c:	2b00      	cmp	r3, #0
+ 800229e:	d00e      	beq.n	80022be <DioIrqHndlr+0x13e>
+			BEACON_COUNT = 2;
+ 80022a0:	4b4e      	ldr	r3, [pc, #312]	; (80023dc <DioIrqHndlr+0x25c>)
+ 80022a2:	2202      	movs	r2, #2
+ 80022a4:	601a      	str	r2, [r3, #0]
+			OBC_SUCCESS_DATA_RX_FLAG = 0;
+ 80022a6:	4b43      	ldr	r3, [pc, #268]	; (80023b4 <DioIrqHndlr+0x234>)
+ 80022a8:	2200      	movs	r2, #0
+ 80022aa:	601a      	str	r2, [r3, #0]
+			DIGIPEATER_STATUS = 0;
+ 80022ac:	4b4e      	ldr	r3, [pc, #312]	; (80023e8 <DioIrqHndlr+0x268>)
+ 80022ae:	2200      	movs	r2, #0
+ 80022b0:	601a      	str	r2, [r3, #0]
+			DIGIPEATER_FLAG = 0;
+ 80022b2:	4b4c      	ldr	r3, [pc, #304]	; (80023e4 <DioIrqHndlr+0x264>)
+ 80022b4:	2200      	movs	r2, #0
+ 80022b6:	601a      	str	r2, [r3, #0]
+			DIGIPEATER_RX_FLAG = 0;
+ 80022b8:	4b4c      	ldr	r3, [pc, #304]	; (80023ec <DioIrqHndlr+0x26c>)
+ 80022ba:	2200      	movs	r2, #0
+ 80022bc:	601a      	str	r2, [r3, #0]
+		}
+
+		if (BEACON_COUNT == 0) {
+ 80022be:	4b47      	ldr	r3, [pc, #284]	; (80023dc <DioIrqHndlr+0x25c>)
+ 80022c0:	681b      	ldr	r3, [r3, #0]
+ 80022c2:	2b00      	cmp	r3, #0
+ 80022c4:	d109      	bne.n	80022da <DioIrqHndlr+0x15a>
+			OBC_SUCCESS_DATA_RX_FLAG = 0;
+ 80022c6:	4b3b      	ldr	r3, [pc, #236]	; (80023b4 <DioIrqHndlr+0x234>)
+ 80022c8:	2200      	movs	r2, #0
+ 80022ca:	601a      	str	r2, [r3, #0]
+			DIGIPEATER_STATUS = 1;
+ 80022cc:	4b46      	ldr	r3, [pc, #280]	; (80023e8 <DioIrqHndlr+0x268>)
+ 80022ce:	2201      	movs	r2, #1
+ 80022d0:	601a      	str	r2, [r3, #0]
+			myDebug("\n########## Digipeater Mode Configuration: ##########\n");
+ 80022d2:	4847      	ldr	r0, [pc, #284]	; (80023f0 <DioIrqHndlr+0x270>)
+ 80022d4:	f7fe fa3a 	bl	800074c <myDebug>
+ 80022d8:	e002      	b.n	80022e0 <DioIrqHndlr+0x160>
+		} else {
+			DIGIPEATER_STATUS = 0;
+ 80022da:	4b43      	ldr	r3, [pc, #268]	; (80023e8 <DioIrqHndlr+0x268>)
+ 80022dc:	2200      	movs	r2, #0
+ 80022de:	601a      	str	r2, [r3, #0]
 		}
 
 		delay_us(500000);
@@ -5024,7 +5024,7 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
  8002396:	b29b      	uxth	r3, r3
  8002398:	461a      	mov	r2, r3
  800239a:	4928      	ldr	r1, [pc, #160]	; (800243c <DioIrqHndlr+0x2bc>)
- 800239c:	4813      	ldr	r0, [pc, #76]	; (80023ec <DioIrqHndlr+0x26c>)
+ 800239c:	480c      	ldr	r0, [pc, #48]	; (80023d0 <DioIrqHndlr+0x250>)
  800239e:	f004 fb39 	bl	8006a14 <HAL_UART_Receive_DMA>
 
 		HAL_UART_Receive_DMA(&hlpuart1, OBC_UART_RX, obc_plen);
@@ -5033,7 +5033,7 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
  80023a6:	b29b      	uxth	r3, r3
  80023a8:	461a      	mov	r2, r3
  80023aa:	4924      	ldr	r1, [pc, #144]	; (800243c <DioIrqHndlr+0x2bc>)
- 80023ac:	4810      	ldr	r0, [pc, #64]	; (80023f0 <DioIrqHndlr+0x270>)
+ 80023ac:	4809      	ldr	r0, [pc, #36]	; (80023d4 <DioIrqHndlr+0x254>)
  80023ae:	f004 fb31 	bl	8006a14 <HAL_UART_Receive_DMA>
  80023b2:	e1a6      	b.n	8002702 <DioIrqHndlr+0x582>
  80023b4:	2000039c 	.word	0x2000039c
@@ -5042,16 +5042,16 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
  80023c0:	20000438 	.word	0x20000438
  80023c4:	0800c564 	.word	0x0800c564
  80023c8:	0800c56c 	.word	0x0800c56c
- 80023cc:	200004dc 	.word	0x200004dc
- 80023d0:	20000004 	.word	0x20000004
- 80023d4:	20000008 	.word	0x20000008
- 80023d8:	200004e0 	.word	0x200004e0
- 80023dc:	200004d8 	.word	0x200004d8
- 80023e0:	200004e4 	.word	0x200004e4
- 80023e4:	0800cbf0 	.word	0x0800cbf0
- 80023e8:	0800cc28 	.word	0x0800cc28
- 80023ec:	20000688 	.word	0x20000688
- 80023f0:	20000560 	.word	0x20000560
+ 80023cc:	0800cbf0 	.word	0x0800cbf0
+ 80023d0:	20000688 	.word	0x20000688
+ 80023d4:	20000560 	.word	0x20000560
+ 80023d8:	200004dc 	.word	0x200004dc
+ 80023dc:	20000004 	.word	0x20000004
+ 80023e0:	20000008 	.word	0x20000008
+ 80023e4:	200004e0 	.word	0x200004e0
+ 80023e8:	200004d8 	.word	0x200004d8
+ 80023ec:	200004e4 	.word	0x200004e4
+ 80023f0:	0800cc28 	.word	0x0800cc28
  80023f4:	0007a120 	.word	0x0007a120
  80023f8:	20000000 	.word	0x20000000
  80023fc:	200002ac 	.word	0x200002ac

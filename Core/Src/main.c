@@ -934,30 +934,6 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 		}
 		myDebug("\r\n");
 
-		memset(tx_buffer, '\0', sizeof(tx_buffer));
-
-		if (PACKET_TYPE == 0xB1 || PACKET_TYPE == 0xB2) {
-			BEACON_COUNT--;
-			COUNT_BEACON--;
-			PACKET_TYPE = 0;
-		}
-
-		if (DIGIPEATER_FLAG) {
-			BEACON_COUNT = 2;
-			OBC_SUCCESS_DATA_RX_FLAG = 0;
-			DIGIPEATER_STATUS = 0;
-			DIGIPEATER_FLAG = 0;
-			DIGIPEATER_RX_FLAG = 0;
-		}
-
-		if (BEACON_COUNT == 0) {
-			OBC_SUCCESS_DATA_RX_FLAG = 0;
-			DIGIPEATER_STATUS = 1;
-			myDebug("\n########## Digipeater Mode Configuration: ##########\n");
-		} else {
-			DIGIPEATER_STATUS = 0;
-		}
-
 		myDebug("\n########## Sending TX done response to OBC ##########\n");
 
 		uint8_t tx_done_response[43];
@@ -984,6 +960,30 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 
 			myDebug("\r\n");
 
+		}
+
+		memset(tx_buffer, '\0', sizeof(tx_buffer));
+
+		if (PACKET_TYPE == 0xB1 || PACKET_TYPE == 0xB2) {
+			BEACON_COUNT--;
+			COUNT_BEACON--;
+			PACKET_TYPE = 0;
+		}
+
+		if (DIGIPEATER_FLAG) {
+			BEACON_COUNT = 2;
+			OBC_SUCCESS_DATA_RX_FLAG = 0;
+			DIGIPEATER_STATUS = 0;
+			DIGIPEATER_FLAG = 0;
+			DIGIPEATER_RX_FLAG = 0;
+		}
+
+		if (BEACON_COUNT == 0) {
+			OBC_SUCCESS_DATA_RX_FLAG = 0;
+			DIGIPEATER_STATUS = 1;
+			myDebug("\n########## Digipeater Mode Configuration: ##########\n");
+		} else {
+			DIGIPEATER_STATUS = 0;
 		}
 
 		delay_us(500000);
