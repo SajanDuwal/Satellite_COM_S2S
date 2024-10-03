@@ -121,10 +121,10 @@ void getAX25Packet(uint8_t *OBC_data_Field, uint8_t size) {
 //	myDebug("Before Bit stuffing:");
 	myDebug("\nReal Data, Length: %d bytes", i);
 	myDebug("\r\n");
-//	for (int j = 0; j < i; j++) {
-//		myDebug("%02x ", ax_buffer[j]);
-//	}
-//	myDebug("\r\n");
+	for (int j = 0; j < i; j++) {
+		myDebug("%02x ", ax_buffer[j]);
+	}
+	myDebug("\r\n");
 
 	// Bit Stuffing
 	int stuffed_size = bit_stuffing(ax_buffer, ax_buff_stuffed, i);

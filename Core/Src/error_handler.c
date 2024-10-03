@@ -124,8 +124,7 @@ int bit_stuffing(uint8_t *data, uint8_t *output_data, int length) {
 //	}
 //	myDebug("\n");
 
-
-	for(int i = 0; i < length; i++){
+	for (int i = 0; i < length; i++) {
 		output_data[i] = data[i];
 	}
 
@@ -184,13 +183,11 @@ int bit_destuffing(uint8_t *data, uint8_t *output_data, int length) {
 //	}
 //	myDebug("\n");
 
-
-	for(int i = 0; i < length; i++){
+	for (int i = 0; i < length; i++) {
 		output_data[i] = data[i];
 	}
 
 	out_index = length;
-
 
 	return out_index;
 }
@@ -226,6 +223,19 @@ int check_packet_type(uint8_t *OBC_UART) {
 	case 0x0d:						// adcs
 		packet_type_true = 1;
 		break;
+
+	case 0xad:						// address data
+		packet_type_true = 1;
+		break;
+
+	case 0xda:						// hk data
+		packet_type_true = 1;
+		break;
+
+	case 0xaa:						// satlog
+		packet_type_true = 1;
+		break;
+
 
 	default:
 		packet_type_true = 0;

@@ -208,7 +208,7 @@ void radioConfig(uint8_t *buffer, uint8_t buffer_len) {
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart == &huart2 || huart == &hlpuart1 || huart == &huart1) {
 
-		if (OBC_HANDSHAKE_FLAG) {
+		if (OBC_HANDSHAKE_FLAG == 1) {
 
 			uint8_t header = 0x00;
 
@@ -219,7 +219,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 				}
 			}
 
-			if (IS_EN_REQ_PA) {
+			if (IS_EN_REQ_PA == 1) {
 
 				IS_EN_REQ_PA = 0;
 
@@ -231,7 +231,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 				packet_type_true = check_packet_type(OBC_UART_RX);
 
-				if (packet_type_true) {
+				if (packet_type_true == 1) {
 
 					if (DIGIPEATER_STATUS == 1 && BEACON_COUNT == 0
 							&& DIGIPEATER_RX_FLAG == 1) {
@@ -511,7 +511,7 @@ int main(void) {
 
 		delay_us(500000);
 
-		if (OBC_SUCCESS_DATA_RX_FLAG) {
+		if (OBC_SUCCESS_DATA_RX_FLAG == 1) {
 
 			getAX25Packet(OBC_UART_RX, obc_ilen);
 
@@ -639,14 +639,21 @@ int main(void) {
 
 				} else {
 					myDebug("\nCommand sent to OBC, Length: %d bytes\r\n",
-							gs_cmd_len);
-					if (HAL_UART_Transmit(&huart2, main_gs_cmd,
-							sizeof(main_gs_cmd), 2000) == HAL_OK
-							|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
-									sizeof(main_gs_cmd), 2000)) {
+							sizeof(COM_UART_TX));
 
-						for (int i = 0; i < gs_cmd_len; i++) {
-							myDebug("%02x ", main_gs_cmd[i]);
+					memset(COM_UART_TX, 0x7e, sizeof(COM_UART_TX));
+
+					for (int i = 0; i < gs_cmd_len; i++) {
+						COM_UART_TX[i] = main_gs_cmd[i];
+					}
+
+					if (HAL_UART_Transmit(&huart2, COM_UART_TX,
+							sizeof(COM_UART_TX), 2000) == HAL_OK
+							|| HAL_UART_Transmit(&hlpuart1, COM_UART_TX,
+									sizeof(COM_UART_TX), 2000)) {
+
+						for (int i = 0; i < sizeof(COM_UART_TX); i++) {
+							myDebug("%02x ", COM_UART_TX[i]);
 						}
 
 						SUBGRF_SetRfFrequency(FREQ_435_MHZ);
@@ -654,6 +661,7 @@ int main(void) {
 						SUBGRF_SetRxBoosted(0xFFFFFF);
 
 						memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+						memset(COM_UART_TX, 0x7e, sizeof(COM_UART_TX));
 						memset(rx_buffer, '\0', sizeof(rx_buffer));
 						memset(crc_buff, '\0', sizeof(crc_buff));
 						memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
@@ -845,26 +853,34 @@ int main(void) {
 
 					} else {
 						myDebug("\nCommand sent to OBC, Length: %d bytes\r\n",
-								gs_cmd_len);
+								sizeof(COM_UART_TX));
 
-						if (HAL_UART_Transmit(&huart2, main_gs_cmd,
-								sizeof(main_gs_cmd), 2000) == HAL_OK
-								|| HAL_UART_Transmit(&hlpuart1, main_gs_cmd,
-										sizeof(main_gs_cmd), 2000) == HAL_OK) {
+						memset(COM_UART_TX, 0x7e, sizeof(COM_UART_TX));
 
-							for (int i = 0; i < gs_cmd_len; i++) {
-								myDebug("%02x ", main_gs_cmd[i]);
+						for (int i = 0; i < gs_cmd_len; i++) {
+							COM_UART_TX[i] = main_gs_cmd[i];
+						}
+
+						if (HAL_UART_Transmit(&huart2, COM_UART_TX,
+								sizeof(COM_UART_TX), 2000) == HAL_OK
+								|| HAL_UART_Transmit(&hlpuart1, COM_UART_TX,
+										sizeof(COM_UART_TX), 2000)) {
+
+							for (int i = 0; i < sizeof(COM_UART_TX); i++) {
+								myDebug("%02x ", COM_UART_TX[i]);
 							}
 
-							myDebug("\r\n");
+							SUBGRF_SetRfFrequency(FREQ_435_MHZ);
+							SUBGRF_SetSwitch(RFO_LP, RFSWITCH_RX); /*Set RF switch*/
+							SUBGRF_SetRxBoosted(0xFFFFFF);
 
 							memset(main_gs_cmd, '\0', sizeof(main_gs_cmd));
+							memset(COM_UART_TX, 0x7e, sizeof(COM_UART_TX));
 							memset(rx_buffer, '\0', sizeof(rx_buffer));
 							memset(crc_buff, '\0', sizeof(crc_buff));
 							memset(gs_cmd_buff, '\0', sizeof(gs_cmd_buff));
 
 							myDebug("\n\n_____OBC__RECEIVER_____\r\n");
-
 						}
 
 					}
@@ -970,7 +986,7 @@ void DioIrqHndlr(RadioIrqMasks_t radioIrq) {
 			PACKET_TYPE = 0;
 		}
 
-		if (DIGIPEATER_FLAG) {
+		if (DIGIPEATER_FLAG == 1) {
 			BEACON_COUNT = 2;
 			OBC_SUCCESS_DATA_RX_FLAG = 0;
 			DIGIPEATER_STATUS = 0;
